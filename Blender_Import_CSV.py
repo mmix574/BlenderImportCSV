@@ -155,6 +155,21 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
     normals = []
     uvs = []
 
+
+    headers = [c.strip() for c in  open(filepath).readline().strip().split(',')]
+    
+    uv0_x = headers.index('texcoord0.x')
+    uv0_y = headers.index('texcoord0.y')
+    
+    
+    contailNormal = False
+    if('in_NORMAL0.x' in headers):
+        normal0_x = headers.index('in_NORMAL0.x')
+        normal0_y = headers.index('in_NORMAL0.y')
+        normal0_z = headers.index('in_NORMAL0.z')
+    
+        contailNormal = normal0_x>-1 and normal0_y>-1 and normal0_z>-1
+    
     with open(filepath) as f:
 
         # Create the CSV reader
@@ -186,21 +201,22 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
                                                  float(row[4]), # Y
                                                  float(row[3]), # Z
                                          )
-            
-            normal_x = float(row[5])
-            normal_y = float(row[6])
-            normal_z = float(row[7])
+            if(contailNormal):
+                normal_x = float(row[normal0_x])
+                normal_y = float(row[normal0_y])
+                normal_z = float(row[normal0_z])
         
             
-            #TODO: How are axises really ligned up?
-            normal_dict[vertex_index] = (
-                                         normal_x, # X
-                                         normal_y, # Y
-                                         normal_z, # Z
-                                         )
+                normal_dict[vertex_index] = (
+                                             normal_x, # X
+                                             normal_y, # Y
+                                             normal_z, # Z
+                                             )
+            else:
+                normal_dict[vertex_index] = (0,0,0)
 
-            #TODO: Add support for changing the origin of UV coords
-            uv = (float(row[8]), float(row[9])) # X and Y coordinates while also modifying V
+            #Add support for changing the origin of UV coords
+            uv = (float(row[uv0_x]), float(row[uv0_y])) # X and Y coordinates while also modifying V
 
             if i < 2:
                 # Append "current" data to list/array until a 3-vertex face is formed
