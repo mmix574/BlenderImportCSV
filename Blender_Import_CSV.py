@@ -164,10 +164,13 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
     uv0_x = -1
     uv0_y = -1
     
-    for k in uv_coord_name:
-        if(k in headers):
-            uv0_x = headers.index(k)
-            uv0_y = headers.index(k)
+    if('in_TEXCOORD0.x' in headers):
+        uv0_x = headers.index('in_TEXCOORD0.x')
+        uv0_y = headers.index('in_TEXCOORD0.y')
+
+    if('texcoord0.x' in headers):
+        uv0_x = headers.index('texcoord0.x')
+        uv0_y = headers.index('texcoord0.y')
     
     if(uv0_x <0 or uv0_y<0 ):
         raise Exception('do not found uv coordinate')
