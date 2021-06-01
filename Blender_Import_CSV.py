@@ -114,7 +114,7 @@ class PIX_CSV_Operator(bpy.types.Operator):
 
 
 # ~~~~~~~~~~~~~~~~~~~~Mesh-Related Functions~~~~~~~~~~~~~~~~~~~~
-def make_mesh(vertices, faces, normals, uvs, global_matrix):
+def make_mesh(vertices, faces, normals, uvs, global_matrix,uvs1 = None):
 
     # Create a new mesh from the vertices and faces
     mesh = bpy.data.meshes.new('name')
@@ -127,8 +127,12 @@ def make_mesh(vertices, faces, normals, uvs, global_matrix):
         index += 1
 
     # Generate UV data
-    uv_layer = mesh.uv_layers.new(name = "UV")
+    uv_layer = mesh.uv_layers.new(name = "UV0")
     for face, uv in enumerate(uv_layer.data): uv.uv = uvs[face]
+    
+    if len(uvs1)>0:
+        uv_layer = mesh.uv_layers.new(name = "UV1")
+        for face, uv in enumerate(uv_layer.data): uv.uv = uvs1[face]
 
     mesh.update(calc_edges = False)
 
@@ -154,6 +158,7 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
     faces = []
     normals = []
     uvs = []
+    uvs1 = []
 
 
     headers = [c.strip() for c in  open(filepath).readline().strip().split(',')]
@@ -174,6 +179,20 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
     
     if(uv0_x <0 or uv0_y<0 ):
         raise Exception('do not found uv coordinate')
+    
+    use_uv1 = False;
+    uv1_x = -1
+    uv1_y = -1
+    
+    if('in_TEXCOORD1.x' in headers):
+        uv1_x = headers.index('in_TEXCOORD1.x')
+        uv1_y = headers.index('in_TEXCOORD1.y')
+        use_uv1 = True;
+
+    if('texcoord1.x' in headers):
+        uv1_x = headers.index('texcoord1.x')
+        uv1_y = headers.index('texcoord1.y')
+        use_uv1 = True;
     
     
     contailNormal = False
@@ -231,11 +250,15 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
 
             #Add support for changing the origin of UV coords
             uv = (float(row[uv0_x]), float(row[uv0_y])) # X and Y coordinates while also modifying V
-
+            uv1 = None
+            if use_uv1:
+                uv1 = (float(row[uv1_x]), float(row[uv1_y]))
+            
             if i < 2:
                 # Append "current" data to list/array until a 3-vertex face is formed
                 current_face.append(vertex_index)
                 uvs.append(uv)
+                uvs1.append(uv1)
                 i += 1
             else:
                 # Append face and UV data to appropriate dictionary/array/list
@@ -244,7 +267,7 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
                 if vertex_order: faces.append((current_face[0], current_face[1], current_face[2]))
                 else: faces.append(current_face)
                 uvs.append(uv)
-
+                uvs1.append(uv1)
                 # Clear For-Loop variables for next iteration
                 current_face = []
                 i = 0
@@ -270,7 +293,7 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
         #print(faces)
         #print(normals)
         #print(uvs)
-        make_mesh(vertices, faces, normals, uvs, global_matrix)
+        make_mesh(vertices, faces, normals, uvs, global_matrix,uvs1 = uvs1)
 
 
 # ~~~~~~~~~~~~~~~~~~~~Registration Functions~~~~~~~~~~~~~~~~~~~~
