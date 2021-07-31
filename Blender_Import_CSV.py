@@ -130,7 +130,8 @@ def make_mesh(vertices, faces, normals, uvs, global_matrix,uvs1 = None):
     uv_layer = mesh.uv_layers.new(name = "UV0")
     for face, uv in enumerate(uv_layer.data): uv.uv = uvs[face]
     
-    if len(uvs1)>0:
+
+    if uvs1 is not None:
         uv_layer = mesh.uv_layers.new(name = "UV1")
         for face, uv in enumerate(uv_layer.data): uv.uv = uvs1[face]
 
@@ -293,7 +294,7 @@ def importCSV(filepath = None, mirror_x = False, vertex_order = True, global_mat
         #print(faces)
         #print(normals)
         #print(uvs)
-        make_mesh(vertices, faces, normals, uvs, global_matrix,uvs1 = uvs1)
+        make_mesh(vertices, faces, normals, uvs, global_matrix,uvs1 = uvs1 if use_uv1  else None)
 
 
 # ~~~~~~~~~~~~~~~~~~~~Registration Functions~~~~~~~~~~~~~~~~~~~~
